@@ -1,0 +1,23 @@
+# Virtual environments
+venv/
+.env/
+__pycache__/
+
+# dbt build artifacts
+target/
+logs/
+dbt_packages/
+manifest.json
+run_results.json
+
+# Local database files
+*.duckdb
+*.db
+*.sqlite
+
+# OS / IDE
+.DS_Store
+*.log
+.vscode/
+.idea/
+
