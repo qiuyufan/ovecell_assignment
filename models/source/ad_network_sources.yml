@@ -1,0 +1,50 @@
+version: 2
+
+sources:
+  - name: ad_network_1
+    description: "Raw CSV data for Ad Network 1."
+    schema: main
+    tables:
+      - name: campaign_updates
+        description: "Campaign history from Ad Network 1."
+        external:
+          location: 'task/ae_ad_network_1_campaign_updates.csv'
+          format: csv
+          options:
+            header: true
+
+      - name: geo_dictionary
+        description: "Geo dictionary for Ad Network 1."
+        external:
+          location: 'task/ae_ad_network_1_geo_dictionary.csv'
+          format: csv
+          options:
+            header: true
+
+      - name: country_report
+        description: "Country-level performance report for Ad Network 1."
+        external:
+          location: 'task/ae_ad_network_1_country_report.csv'
+          format: csv
+          options:
+            header: true
+
+      - name: detailed_report
+        description: "State-level performance report for Ad Network 1."
+        external:
+          location: 'task/ae_ad_network_1_detailed_report.csv'
+          format: csv
+          options:
+            header: true
+
+  - name: ad_network_2
+    description: "Raw CSV data for Ad Network 2."
+    schema: main
+    tables:
+      - name: report
+        description: "Performance report for Ad Network 2."
+        external:
+          location: 'task/ae_ad_network_2_report.csv'
+          format: csv
+          options:
+            header: true
