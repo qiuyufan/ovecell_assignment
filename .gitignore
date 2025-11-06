@@ -21,3 +21,7 @@ run_results.json
 .vscode/
 .idea/
 
+*.duckdb
+venv/
+target/
+logs/
