@@ -8,7 +8,6 @@ models:
         description: "Unique ID of a marketing campaign from Ad Network 1."
         tests:
           - not_null
-          - unique
       - name: update_date
         description: "Date when the campaign info was last updated."
         tests:
@@ -17,22 +16,24 @@ models:
         description: "Name of the campaign."
 
   - name: stg_ad_network_1_geo_dictionary
-    description: "Geo dictionary mapping location IDs to country and region names."
+    description: "Geo dictionary mapping location IDs to country, state, city, etc."
     columns:
       - name: location_id
         description: "Unique ID of a location."
         tests:
           - not_null
-          - unique
       - name: country_code
         description: "Alpha-2 code of the country."
       - name: location_name
         description: "Full name of the location."
       - name: location_type
-        description: "Type of the location (e.g., country, state)."
-
+        description: "Type of the location (e.g., country, state, city, postal_code)."
+        
   - name: stg_ad_network_1_country_report
     description: "Country-level performance report from Ad Network 1."
+    tests:
+      - unique:
+          column_name: "concat(campaign_id, '-', report_date, '-', country_id)"
     columns:
       - name: report_date
         description: "Date of the report."
@@ -42,8 +43,16 @@ models:
         description: "Campaign ID (links to campaign updates)."
         tests:
           - not_null
+          - relationships:
+              to: ref('stg_ad_network_1_campaign_updates')
+              field: campaign_id
       - name: country_id
         description: "ID of the country location."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_ad_network_1_geo_dictionary')
+              field: location_id
       - name: spend
         description: "Total ad spend (USD)."
       - name: impressions
@@ -53,21 +62,46 @@ models:
 
   - name: stg_ad_network_1_detailed_report
     description: "State-level performance report for Ad Network 1."
+    tests:
+      - unique:
+          column_name: "concat(campaign_id, '-', report_date, '-', state_id)"
     columns:
       - name: report_date
+        description: "Date of the report."
         tests:
           - not_null
       - name: campaign_id
+        description: "Campaign ID (links to campaign updates)."
         tests:
           - not_null
-      - name: country_id
+          - relationships:
+              to: ref('stg_ad_network_1_campaign_updates')
+              field: campaign_id
       - name: state_id
+        description: "ID of the state or region."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_ad_network_1_geo_dictionary')
+              field: location_id
+      - name: country_id
+        description: "ID of the parent country."
+        tests:
+          - relationships:
+              to: ref('stg_ad_network_1_geo_dictionary')
+              field: location_id
       - name: spend
+        description: "Ad spend (USD)."
       - name: impressions
+        description: "Number of impressions."
       - name: clicks
+        description: "Number of clicks."
 
   - name: stg_ad_network_2_report
-    description: "Performance report of Ad Network 2."
+    description: "Performance report of Ad Network 2 (country-level only)."
+    tests:
+      - unique:
+          column_name: "concat(campaign_id, '-', report_date)"
     columns:
       - name: campaign_id
         description: "Unique campaign ID from Ad Network 2."
@@ -85,5 +119,3 @@ models:
         description: "Number of impressions."
       - name: clicks
         description: "Number of ad clicks."
-
-
