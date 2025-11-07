@@ -1,0 +1,50 @@
+version: 2
+
+models:
+
+  - name: int_ad_network_2_enriched
+    description: >
+      Enriched version of deduplicated Ad Network 2 data.
+      Adds derived country_code extracted from campaign_name.
+    columns:
+      - name: campaign_id
+        description: "Unique campaign identifier."
+      - name: campaign_name
+        description: "Cleaned campaign name."
+      - name: report_date
+        description: "Date of the performance report."
+      - name: country_code
+        description: >
+          ISO Alpha-2 country code extracted from campaign_name using regex.
+          Example: 'ad_network_2_iOS_US_All_C_Exact_CPT' → 'US'.
+      - name: spend
+        description: "Ad spend (USD)."
+      - name: impressions
+        description: "Number of ad impressions."
+      - name: clicks
+        description: "Number of ad clicks."
+
+  - name: int_ad_network_2_geo_joined
+    description: >
+      Joins Ad Network 2 enriched data with geo dictionary to map
+      country_code → country_name and country_id.
+      Only includes geo records where location_type = 'country'.
+    columns:
+      - name: campaign_id
+        description: "Campaign ID from Ad Network 2."
+      - name: campaign_name
+        description: "Cleaned campaign name."
+      - name: report_date
+        description: "Date of the performance report."
+      - name: country_code
+        description: "ISO Alpha-2 country code derived from campaign_name."
+      - name: country_name
+        description: "Country name from geo dictionary."
+      - name: country_id
+        description: "Location ID from geo dictionary for country-level joins."
+      - name: spend
+        description: "Total ad spend in USD."
+      - name: impressions
+        description: "Ad impressions count."
+      - name: clicks
+        description: "Ad clicks count."
