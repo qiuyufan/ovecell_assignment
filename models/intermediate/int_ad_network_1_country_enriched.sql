@@ -1,21 +1,5 @@
-{{ config(materialized='table') }}
-
 -- ============================================================
--- Ad Network 1 – Country-Level Enriched Model
---
--- Purpose:
---   Enrich the country-level performance data with campaign
---   metadata and geographic information.
---
--- Inputs:
---   - stg_ad_network_1_country_report
---   - stg_ad_network_1_campaign_updates
---   - stg_ad_network_1_geo_dictionary
---
--- Outputs:
---   - report_date, campaign_id, campaign_name
---   - country_id, country_name
---   - spend, impressions, clicks
+-- Ad Network 1 – Country-Level Enriched Model (Final DBT Version)
 -- ============================================================
 
 with country_report as (
@@ -30,34 +14,35 @@ with country_report as (
 ),
 
 campaign_meta as (
-    select
+    select distinct
         campaign_id,
-        max(campaign_name) as campaign_name  -- if multiple update_dates exist
+        trim(campaign_name) as campaign_name
     from {{ ref('stg_ad_network_1_campaign_updates') }}
-    group by campaign_id
 ),
 
 geo_country as (
     select
-        location_id   as country_id,
-        trim(location_name) as country_name,
-        lower(country_code) as country_code
+        location_id   as geo_country_id,
+        trim(location_name) as geo_country_name,
+        lower(country_code) as geo_country_code,
+        lower(location_type) as location_type
     from {{ ref('int_geo_dim_extension') }}
-    where lower(location_type) = 'country'
 )
 
 select
-    c.report_date,
-    c.campaign_id,
-    cm.campaign_name,
-    g.country_id,
-    g.country_name,
-    g.country_code,
-    c.spend,
-    c.impressions,
-    c.clicks
-from country_report c
-left join campaign_meta cm
-    on c.campaign_id = cm.campaign_id
+    f.report_date,
+    f.campaign_id,
+    c.campaign_name,
+    g.geo_country_id   as country_id,
+    g.geo_country_name as country_name,
+    g.geo_country_code as country_code,
+    g.location_type as location_type,
+    f.spend,
+    f.impressions,
+    f.clicks
+from country_report f
+left join campaign_meta c
+    on f.campaign_id = c.campaign_id
 left join geo_country g
-    on c.country_id = g.country_id
+    on cast(f.country_id as varchar) = cast(g.geo_country_id as varchar)
+   and lower(g.location_type) in ('country', 'region')

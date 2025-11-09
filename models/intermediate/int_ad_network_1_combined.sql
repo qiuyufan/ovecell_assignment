@@ -1,19 +1,10 @@
-{{ config(materialized='table') }}
-
 -- ============================================================
--- Ad Network 1 – Combined Country + State Table
---
--- Purpose:
---   Merge the state-level and country-level enriched data
---   into a single unified fact table with consistent structure.
---
--- Logic:
---   1. Take all state-level rows (most detailed granularity)
---   2. Add country-level rows for countries without any state-level data
+-- Ad Network 1 – Combined (Country + State, Union-Ready)
 -- ============================================================
 
 with state_data as (
     select
+        'Network 1' as network_source,
         report_date,
         campaign_id,
         campaign_name,
@@ -22,29 +13,31 @@ with state_data as (
         country_id,
         country_name,
         country_code,
+        location_type,      -- keep this before spend to match Network 2
         spend,
         impressions,
-        clicks
+        clicks,
+        'state' as geo_level
     from {{ ref('int_ad_network_1_state_enriched') }}
 ),
 
 country_data as (
     select
+        'Network 1' as network_source,
         report_date,
         campaign_id,
         campaign_name,
-        null as state_id,
-        null as state_name,
+        'NA' as state_id,
+        'NA' as state_name,
         country_id,
         country_name,
         country_code,
+        location_type,
         spend,
         impressions,
-        clicks
+        clicks,
+        'country' as geo_level
     from {{ ref('int_ad_network_1_country_enriched') }}
-    where country_id not in (
-        select distinct country_id from {{ ref('int_ad_network_1_state_enriched') }}
-    )
 )
 
 select * from state_data
