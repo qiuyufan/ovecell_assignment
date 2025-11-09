@@ -1,4 +1,3 @@
-{{ config(materialized='table') }}
 
 -- ============================================================
 -- Ad Network 2 – Enriched Model
