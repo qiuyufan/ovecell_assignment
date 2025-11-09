@@ -2,101 +2,68 @@ version: 2
 
 models:
 
+  # ============================================================
+  # AD NETWORK 2
+  # ============================================================
+
   - name: int_ad_network_2_enriched
     description: >
-      Enriched version of deduplicated Ad Network 2 data.
+      Enriched version of Ad Network 2 data.
       Adds derived country_code extracted from campaign_name.
     columns:
       - name: campaign_id
-        description: "Unique campaign identifier."
+        tests: [not_null]
       - name: campaign_name
-        description: "Cleaned campaign name."
       - name: report_date
-        description: "Date of the performance report."
+        tests: [not_null]
       - name: country_code
-        description: >
-          ISO Alpha-2 country code extracted from campaign_name using regex.
-          Example: 'ad_network_2_iOS_US_All_C_Exact_CPT' → 'US'.
       - name: spend
-        description: "Ad spend (USD)."
       - name: impressions
-        description: "Number of ad impressions."
       - name: clicks
-        description: "Number of ad clicks."
 
   - name: int_ad_network_2_geo_joined
     description: >
       Joins Ad Network 2 enriched data with geo dictionary to map
       country_code → country_name and country_id.
-      Only includes geo records where location_type = 'country'.
     columns:
-      - name: campaign_id
-        description: "Campaign ID from Ad Network 2."
-      - name: campaign_name
-        description: "Cleaned campaign name."
-      - name: report_date
-        description: "Date of the performance report."
-      - name: country_code
-        description: "ISO Alpha-2 country code derived from campaign_name."
-      - name: country_name
-        description: "Country name from geo dictionary."
       - name: country_id
-        description: "Location ID from geo dictionary for country-level joins."
-      - name: spend
-        description: "Total ad spend in USD."
-      - name: impressions
-        description: "Ad impressions count."
-      - name: clicks
-        description: "Ad clicks count."
-
-  - name: int_ad_network_1_country_enriched
-    description: >
-      Enriched Ad Network 1 country-level report. Adds campaign metadata
-      and geographic info for records where location_type = 'country'.
-    columns:
-      - name: report_date
-        description: "Date of the report."
-      - name: campaign_id
-        description: "Campaign identifier from Ad Network 1."
+        description: "Foreign key from geo dimension."
+        tests:
+          # ensures every country_id exists in geo dimension
+          - relationships:
+              arguments:
+                to: ref('int_geo_dim_extension')
+                field: location_id
+      - name: country_code
         tests:
           - not_null
-      - name: campaign_name
-        description: "Name of the campaign from campaign_updates."
-      - name: country_id
-        description: "Geo dictionary ID for the country."
-      - name: country_name
-        description: "Full name of the country from geo dictionary."
-      - name: country_code
-        description: "ISO Alpha-2 country code from geo dictionary."
-      - name: spend
-        description: "Total ad spend (USD)."
-      - name: impressions
-        description: "Number of ad impressions."
-      - name: clicks
-        description: "Number of ad clicks."
 
-
-  - name: int_ad_network_1_state_enriched
+ 
+  # ============================================================
+  # AD NETWORK 1 – COUNTRY LEVEL
+  # ============================================================
+  - name: int_ad_network_1_country_enriched
     description: >
-      Enriched Ad Network 1 state-level performance data with campaign metadata
-      and geographic hierarchy (state + country) from int_geo_dim_extension.
+      Enriched Ad Network 1 country-level report combining performance,
+      campaign metadata (latest update < report_date),
+      and geo info from int_geo_dim_extension.
     columns:
       - name: report_date
-        description: "Date of the report."
+        description: "Date of the country-level performance report."
+        tests:
+          - not_null
       - name: campaign_id
-        tests: [not_null]
-      - name: campaign_name
-        description: "Name of the campaign."
-      - name: state_id
-        description: "Geo dictionary ID for the state."
-      - name: state_name
-        description: "Full name of the state."
+        description: "Unique campaign identifier."
+        tests:
+          - not_null
       - name: country_id
         description: "Geo dictionary ID for the country."
+        tests:
+          - not_null
       - name: country_name
         description: "Full name of the country."
       - name: country_code
-        description: "ISO Alpha-2 code for the country."
+        description: "ISO Alpha-2 country code."
       - name: spend
         description: "Ad spend (USD)."
       - name: impressions
@@ -104,28 +71,31 @@ models:
       - name: clicks
         description: "Number of ad clicks."
 
-  - name: int_ad_network_1_combined
+  # ============================================================
+  # AD NETWORK 1 – STATE LEVEL
+  # ============================================================
+  - name: int_ad_network_1_state_enriched
     description: >
-      Unified Ad Network 1 dataset merging state- and country-level data.
-      State rows take precedence where both levels exist.
+      Enriched Ad Network 1 state-level report combining detailed data,
+      campaign metadata (latest update < report_date),
+      and hierarchical geo information.
     columns:
       - name: report_date
-        description: "Date of the report."
+        description: "Date of the state-level performance report."
+        tests:
+          - not_null
       - name: campaign_id
-        description: "Campaign identifier."
-        tests: [not_null]
-      - name: campaign_name
-        description: "Name of the campaign."
+        description: "Unique campaign identifier."
+        tests:
+          - not_null
       - name: state_id
-        description: "Geo ID for the state (nullable)."
-      - name: state_name
-        description: "Name of the state (nullable)."
+        description: "Geo dictionary ID for the state."
+        tests:
+          - not_null
       - name: country_id
-        description: "Geo ID for the country."
-      - name: country_name
-        description: "Name of the country."
-      - name: country_code
-        description: "ISO Alpha-2 code for the country."
+        description: "Geo dictionary ID for the associated country."
+        tests:
+          - not_null
       - name: spend
         description: "Ad spend (USD)."
       - name: impressions
