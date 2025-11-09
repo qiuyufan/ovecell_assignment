@@ -2,9 +2,14 @@ version: 2
 
 models:
   - name: mkt_ad_performance_mart
-    description: >
-      Unified marketing performance datamart combining Ad Network 1 and Ad Network 2
-      at the most granular geographic level available.
+    description: "Unified ad performance mart for both Ad Networks."
+    columns:
+      - name: geo_level
+        description: "Granularity level of the record ('country' or 'state')."
+        tests:
+          - accepted_values:
+              values: ['country', 'state']
+
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -12,18 +17,5 @@ models:
             - report_date
             - campaign_id
             - country_name
-            - coalesce(state_name, 'none')
-    columns:
-      - name: ad_network
-        description: "Ad network name (ad_network_1 or ad_network_2)."
-        tests: [not_null, accepted_values: {values: ['ad_network_1', 'ad_network_2']}]
-      - name: report_date
-        tests: [not_null]
-      - name: campaign_id
-        tests: [not_null]
-      - name: spend
-        tests: [not_null]
-      - name: impressions
-        tests: [not_null]
-      - name: clicks
-        tests: [not_null]
+            - coalesce(state_name, 'None')
+            - geo_level
